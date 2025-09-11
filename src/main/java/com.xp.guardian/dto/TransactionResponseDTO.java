@@ -1,7 +1,6 @@
 package com.xp.guardian.dto;
 
 import com.xp.guardian.enums.TransactionStatus;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 
