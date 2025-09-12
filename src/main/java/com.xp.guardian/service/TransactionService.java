@@ -27,13 +27,6 @@ public class TransactionService {
     private final BettingHouseService bettingHouseService;
     private final InvestmentSuggestionRepository suggestionRepository;
 
-    public TransactionService(TransactionRepository transactionRepository, ClientRepository clientRepository, BettingHouseService bettingHouseService, InvestmentSuggestionRepository suggestionRepository) {
-        this.transactionRepository = transactionRepository;
-        this.clientRepository = clientRepository;
-        this.bettingHouseService = bettingHouseService;
-        this.suggestionRepository = suggestionRepository;
-    }
-
     @Transactional
     public TransactionResponseDTO processTransaction(TransactionRequestDTO request) {
         Client client = clientRepository.findById(request.clientId())

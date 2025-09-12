@@ -16,10 +16,6 @@ public class ClientService {
 
     private final ClientRepository clientRepository;
 
-    public ClientService(ClientRepository clientRepository) {
-        this.clientRepository = clientRepository;
-    }
-
     @Transactional
     public ClientDTO createClient(CreateClientDTO dto) {
         Client client = new Client();
