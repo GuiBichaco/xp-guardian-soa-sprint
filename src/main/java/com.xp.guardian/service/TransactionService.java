@@ -29,16 +29,16 @@ public class TransactionService {
 
     @Transactional
     public TransactionResponseDTO processTransaction(TransactionRequestDTO request) {
-        Client client = clientRepository.findById(request.clientId())
-                .orElseThrow(() -> new ClientNotFoundException("Cliente com ID " + request.clientId() + " não encontrado."));
+        Client client = clientRepository.findById(request.getClientId())
+                .orElseThrow(() -> new ClientNotFoundException("Cliente com ID " + request.getClientId() + " não encontrado."));
 
         Transaction transaction = new Transaction();
         transaction.setClient(client);
-        transaction.setAmount(request.amount());
-        transaction.setDescription(request.description());
+        transaction.setAmount(request.getAmount());
+        transaction.setDescription(request.getDescription());
         transaction.setTimestamp(Instant.now());
 
-        if (bettingHouseService.isBettingHouseTransaction(request.description())) {
+        if (bettingHouseService.isBettingHouseTransaction(request.getDescription())) {
             return blockTransactionAndSuggestInvestment(transaction, client);
         } else {
             return approveTransaction(transaction, client);
@@ -91,7 +91,7 @@ public class TransactionService {
         String formattedAmount = String.format("%.2f", amount).replace('.', ',');
         String text = String.format(
                 "Olá %s, notamos que você tentou gastar R$ %s em uma aposta. Que tal investir esse valor em nosso CDB com rendimento de 110%% do CDI?",
-                client.getName().split(" ")[0], // Pega o primeiro nome
+                client.getName().split(" ")[0],
                 formattedAmount
         );
         InvestmentSuggestion suggestion = new InvestmentSuggestion();

@@ -19,9 +19,11 @@ public class ClientService {
     @Transactional
     public ClientDTO createClient(CreateClientDTO dto) {
         Client client = new Client();
-        client.setName(dto.name());
-        client.setEmail(dto.email());
-        client.setBalance(dto.initialBalance());
+
+
+        client.setName(dto.getName());
+        client.setEmail(dto.getEmail());
+        client.setBalance(dto.getInitialBalance());
 
         Client savedClient = clientRepository.save(client);
         return ClientDTO.fromEntity(savedClient);
