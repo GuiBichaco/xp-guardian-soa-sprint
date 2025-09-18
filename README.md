@@ -76,32 +76,34 @@ erDiagram
 Diagrama de Casos de Uso
 
 ```mermaid
-useCaseDiagram
-    actor "Cliente da API" as User
-    actor "Banco XP (Sistema Central)" as BankSystem
+graph TD
+    User(["👤<br>Cliente da API"])
+    BankSystem(["🏦<br>Banco XP (Sistema Central)"])
+    
+    subgraph Sistema XP Guardian
+        UC_CreateClient("Cadastrar Novo Cliente")
+        UC_Process("Processar Transação")
+        UC_GetClient("Consultar Cliente")
 
-    rectangle "Sistema XP Guardian" {
-        usecase "Cadastrar Novo Cliente" as UC_Create
-        usecase "Processar Transação" as UC_Process
-        usecase "Consultar Cliente" as UC_Consult
-        usecase "Verificar se é Casa de Aposta" as UC_CheckBet
-        usecase "Validar Saldo do Cliente" as UC_CheckBalance
-        usecase "Bloquear Transação" as UC_Block
-        usecase "Gerar Sugestão de Investimento" as UC_Suggest
-    }
+        UC_CheckBet("Verificar se é Casa de Aposta")
+        UC_CheckBalance("Validar Saldo do Cliente")
+        UC_Block("Bloquear Transação")
+        UC_Suggest("Gerar Sugestão de Investimento")
+    end
 
-    User --> UC_Create
+    User --> UC_CreateClient
     User --> UC_Process
-    User --> UC_Consult
+    User --> UC_GetClient
 
-    UC_Process ..> UC_CheckBet : <<include>>
-    UC_Process ..> UC_CheckBalance : <<include>>
+    UC_Process -.->|inclui| UC_CheckBet
+    UC_Process -.->|inclui| UC_CheckBalance
     
-    UC_CheckBet --> UC_Block
-    
-    UC_Block ..> UC_Suggest : <<include>>
+    UC_CheckBet -- "Se for aposta" --> UC_Block
+    UC_Block -.->|inclui| UC_Suggest
 
-    UC_Suggest -- BankSystem : "consulta produtos"
+    UC_Suggest ---|consulta produtos| BankSystem
+
+    classDef default fill:#fff,stroke:#333,stroke-width:2px;
 ```
 
 
