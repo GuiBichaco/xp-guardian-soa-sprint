@@ -172,128 +172,109 @@ Este projeto utiliza **Lombok**. Para que sua IDE entenda o código e não mostr
 
 3.  A aplicação estará disponível em `http://localhost:8080`. O console do banco H2 pode ser acessado em `http://localhost:8080/h2-console`.
 
-## 🎮 Exemplos de Requisições e Respostas (cURL)
+## 🚀 Guia de Uso com Postman
 
-### 1. Criar um novo Cliente
+Este guia detalha como configurar o Postman para testar todos os endpoints da API XP Guardian.
 
-* **Request:**
-    ```bash
-    curl -X POST http://localhost:8080/api/v1/clients \
-    -H "Content-Type: application/json" \
-    -d '{
+### Configuração Inicial (Collection e Environment)
+
+Para organizar os testes e facilitar a execução, vamos criar uma *Collection* para nossas requisições e um *Environment* para gerenciar a URL base.
+
+**1. Crie uma Collection:**
+- No Postman, clique em "Collections" na barra lateral esquerda.
+- Clique no ícone de `+` e crie uma nova collection chamada `XP Guardian`. Todas as nossas requisições ficarão aqui.
+
+**2. Crie um Environment:**
+- No Postman, clique em "Environments" na barra lateral esquerda.
+- Clique no ícone de `+` para criar um novo ambiente. Dê o nome de `XP Guardian Local`.
+- Adicione uma variável chamada `baseUrl`.
+- No campo **INITIAL VALUE** e **CURRENT VALUE**, coloque a URL base da sua API: `http://localhost:8080`
+- Salve o ambiente e lembre-se de selecioná-lo no canto superior direito do Postman antes de começar.
+
+
+---
+### Executando os Testes Passo a Passo
+
+Agora, adicione as seguintes requisições à sua collection `XP Guardian`.
+
+#### 1. Cadastrar Novo Cliente
+
+Cria um novo cliente no sistema.
+
+1.  Clique nos três pontos (`...`) ao lado da sua collection e selecione **"Add Request"**.
+2.  Dê o nome de `1. Cadastrar Novo Cliente`.
+3.  Mude o método HTTP para **`POST`**.
+4.  Na URL, digite: `{{baseUrl}}/api/v1/clients`
+5.  Vá para a aba **Body**.
+6.  Selecione as opções `raw` e `JSON`.
+7.  Cole o seguinte corpo (body):
+    ```json
+    {
       "name": "João da Silva",
       "email": "joao.silva@email.com",
       "initialBalance": 1000.00
-    }'
-    ```
-* **Response (`201 Created`):**
-    ```json
-    {
-      "id": 1,
-      "name": "João da Silva",
-      "email": "joao.silva@email.com",
-      "balance": 1000.00
     }
     ```
+8.  Clique em **Send**.
 
-### 2. Processar uma Transação (Não-Aposta - Aprovada)
+* **Resultado Esperado:** Você deve receber um status `201 Created` e a resposta JSON com os dados do cliente. **Anote o `id` (ex: 1) para usar nos próximos passos.**
 
-* **Request:**
-    ```bash
-    curl -X POST http://localhost:8080/api/v1/transactions \
-    -H "Content-Type: application/json" \
-    -d '{
+#### 2. Processar Transação Normal (Aprovada)
+
+Simula uma transação comum que deve ser aprovada.
+
+1.  Crie uma nova requisição chamada `2. Processar Transação Normal`.
+2.  Método: **`POST`**
+3.  URL: `{{baseUrl}}/api/v1/transactions`
+4.  Na aba **Body** (`raw`, `JSON`), cole:
+    ```json
+    {
       "clientId": 1,
       "amount": 75.50,
       "description": "Pagamento iFood"
-    }'
-    ```
-* **Response (`201 Created`):**
-    ```json
-    {
-        "transactionId": 1,
-        "clientId": 1,
-        "amount": 75.50,
-        "description": "Pagamento iFood",
-        "status": "APPROVED",
-        "timestamp": "...",
-        "message": "Transação aprovada com sucesso.",
-        "investmentSuggestion": null
     }
     ```
+5.  Clique em **Send**.
 
-### 3. Processar uma Transação (Casa de Aposta - Bloqueada)
+* **Resultado Esperado:** Status `201 Created` e uma resposta com `"status": "APPROVED"`.
 
-* **Request:**
-    ```bash
-    curl -X POST http://localhost:8080/api/v1/transactions \
-    -H "Content-Type: application/json" \
-    -d '{
+#### 3. Processar Transação de Aposta (Bloqueada)
+
+Simula uma transação para uma casa de apostas, que deve ser bloqueada.
+
+1.  Crie uma nova requisição chamada `3. Processar Transação de Aposta`.
+2.  Método: **`POST`**
+3.  URL: `{{baseUrl}}/api/v1/transactions`
+4.  Na aba **Body** (`raw`, `JSON`), cole:
+    ```json
+    {
       "clientId": 1,
       "amount": 100.00,
-      "description": "Depósito Bet365"
-    }'
-    ```
-* **Response (`201 Created`):**
-    ```json
-    {
-        "transactionId": 2,
-        "clientId": 1,
-        "amount": 100.00,
-        "description": "Depósito Bet365",
-        "status": "BLOCKED",
-        "timestamp": "...",
-        "message": "Transação bloqueada. Uma oportunidade de investimento foi gerada.",
-        "investmentSuggestion": {
-            "id": 1,
-            "text": "Olá João, notamos que você tentou gastar R$ 100,00 em uma aposta. Que tal investir esse valor em nosso CDB com rendimento de 110% do CDI?",
-            "createdAt": "..."
-        }
+      "description": "Depósito para bet365 online"
     }
     ```
+5.  Clique em **Send**.
 
-### 4. Consultar um Cliente e suas Sugestões
+* **Resultado Esperado:** Status `201 Created` e uma resposta com `"status": "BLOCKED"` e o objeto `investmentSuggestion` preenchido.
 
-* **Request:**
-    ```bash
-    curl -X GET http://localhost:8080/api/v1/clients/1
-    ```
-* **Response (`200 OK`):**
-    ```json
-    {
-        "id": 1,
-        "name": "João da Silva",
-        "email": "joao.silva@email.com",
-        "balance": 924.50,
-        "investmentSuggestions": [
-            {
-                "id": 1,
-                "text": "Olá João, notamos que você tentou gastar R$ 100,00 em uma aposta. Que tal investir esse valor em nosso CDB com rendimento de 110% do CDI?",
-                "createdAt": "..."
-            }
-        ]
-    }
-    ```
+#### 4. Consultar Estado Final do Cliente
 
-### 5. Tentar uma transação para um cliente inexistente
+Verifica o saldo atualizado do cliente e a lista de sugestões de investimento.
 
-* **Request:**
-    ```bash
-    curl -X POST http://localhost:8080/api/v1/transactions \
-    -H "Content-Type: application/json" \
-    -d '{
-      "clientId": 999,
-      "amount": 50.00,
-      "description": "Teste"
-    }'
-    ```
-* **Response (`404 Not Found`):**
-    ```json
-    {
-        "timestamp": "...",
-        "status": 404,
-        "error": "Recurso não encontrado",
-        "message": "Cliente com ID 999 não encontrado.",
-        "path": "/api/v1/transactions"
-    }
-    ```
+1.  Crie uma nova requisição chamada `4. Consultar Cliente Final`.
+2.  Método: **`GET`**
+3.  URL: `{{baseUrl}}/api/v1/clients/1` (lembre-se de usar o `id` do cliente que você criou).
+4.  Clique em **Send**.
+
+* **Resultado Esperado:** Status `200 OK` e o corpo da resposta mostrando o `balance` atualizado (ex: `924.50`) e a lista `investmentSuggestions` com a sugestão gerada no passo anterior.
+
+#### 5. Testar Erro de Cliente Inexistente (404)
+
+Demonstra como a API lida com erros quando um recurso não é encontrado.
+
+1.  Crie uma nova requisição chamada `5. Testar Erro 404`.
+2.  Método: **`GET`**
+3.  URL: `{{baseUrl}}/api/v1/clients/999` (use um `id` que não existe).
+4.  Clique em **Send**.
+
+* **Resultado Esperado:** Status `404 Not Found` e uma resposta de erro JSON padronizada.
