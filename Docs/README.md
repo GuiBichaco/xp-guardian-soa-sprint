@@ -49,13 +49,13 @@ A aplicação segue uma arquitetura em camadas bem definida para garantir a sepa
 ```mermaid
 graph TD
     subgraph "Cliente"
-        A[Postman / cURL]
+        A[ Postman ]
     end
 
     subgraph "Aplicação XP Guardian"
-        B["Controller Layer"]
-        C["Service Layer"]
-        D["Repository Layer"]
+        B["ClientController & TransactionController (Camada de controle)"]
+        C["ClientService, TransactionService & BettingHouseService (Camada de Serviço)"]
+        D["Repositories (Camada de acesso a Dados)"]
     end
 
     subgraph "Banco de Dados"
@@ -100,33 +100,33 @@ Diagrama de Casos de Uso
 
 ```mermaid
 graph TD
-User(["👤<br>Cliente da API"])
-BankSystem(["🏦<br>Banco XP (Sistema Central)"])
+    User(["👤<br>Cliente da API"])
+    BankSystem(["🏦<br>Banco XP (Sistema Central)"])
+    
+    subgraph "Sistema XP Guardian"
+        UC_CreateClient("Cadastrar Novo Cliente")
+        UC_Process("Processar Transação")
+        UC_GetClient("Consultar Cliente")
 
-subgraph Sistema XP Guardian
-UC_CreateClient("Cadastrar Novo Cliente")
-UC_Process("Processar Transação")
-UC_GetClient("Consultar Cliente")
+        UC_CheckBet("Verificar se é Casa de Aposta")
+        UC_CheckBalance("Validar Saldo do Cliente")
+        UC_Block("Bloquear Transação")
+        UC_Suggest("Gerar Sugestão de Investimento")
+    end
 
-UC_CheckBet("Verificar se é Casa de Aposta")
-UC_CheckBalance("Validar Saldo do Cliente")
-UC_Block("Bloquear Transação")
-UC_Suggest("Gerar Sugestão de Investimento")
-end
+    User --> UC_CreateClient
+    User --> UC_Process
+    User --> UC_GetClient
 
-User --> UC_CreateClient
-User --> UC_Process
-User --> UC_GetClient
+    UC_Process -.->|"<<include>>"| UC_CheckBet
+    UC_Process -.->|"<<include>>"| UC_CheckBalance
+    
+    UC_CheckBet -- "Se for aposta" --> UC_Block
+    UC_Block -.->|"<<include>>"| UC_Suggest
 
-UC_Process -.->|inclui| UC_CheckBet
-UC_Process -.->|inclui| UC_CheckBalance
+    UC_Suggest ---|"consulta produtos"| BankSystem
 
-UC_CheckBet -- "Se for aposta" --> UC_Block
-UC_Block -.->|inclui| UC_Suggest
-
-UC_Suggest ---|consulta produtos| BankSystem
-
-classDef default fill:#fff,stroke:#333,stroke-width:2px;
+    classDef default fill:#fff,stroke:#333,stroke-width:2px;
 ```
 ---
 
@@ -175,36 +175,25 @@ Este projeto utiliza **Lombok**. Para que sua IDE entenda o código e não mostr
 ## 🚀 Guia de Uso com Postman
 
 Este guia detalha como configurar o Postman para testar todos os endpoints da API XP Guardian.
-
-### Configuração Inicial (Collection e Environment)
-
-Para organizar os testes e facilitar a execução, vamos criar uma *Collection* para nossas requisições e um *Environment* para gerenciar a URL base.
-
-**1. Crie uma Collection:**
-- No Postman, clique em "Collections" na barra lateral esquerda.
-- Clique no ícone de `+` e crie uma nova collection chamada `XP Guardian`. Todas as nossas requisições ficarão aqui.
-
-**2. Crie um Environment:**
-- No Postman, clique em "Environments" na barra lateral esquerda.
-- Clique no ícone de `+` para criar um novo ambiente. Dê o nome de `XP Guardian Local`.
-- Adicione uma variável chamada `baseUrl`.
-- No campo **INITIAL VALUE** e **CURRENT VALUE**, coloque a URL base da sua API: `http://localhost:8080`
-- Salve o ambiente e lembre-se de selecioná-lo no canto superior direito do Postman antes de começar.
-
-
 ---
+
+- Abra o aplicação do Postman em seu computador.
+- Se desejável, crie uma conta. (Para o nosso teste não será necessário)
+- Selecione o "+" conforme a imagem abaixo para abrir uma nova guia de requisição e siga os próximos passos.
+
+![img.png](img.png)
+![img_1.png](img_1.png)
+
 ### Executando os Testes Passo a Passo
 
-Agora, adicione as seguintes requisições à sua collection `XP Guardian`.
+Adicione as seguintes requisições à sua collection `XP Guardian`.
 
 #### 1. Cadastrar Novo Cliente
 
 Cria um novo cliente no sistema.
 
-1.  Clique nos três pontos (`...`) ao lado da sua collection e selecione **"Add Request"**.
-2.  Dê o nome de `1. Cadastrar Novo Cliente`.
-3.  Mude o método HTTP para **`POST`**.
-4.  Na URL, digite: `{{baseUrl}}/api/v1/clients`
+1. Mude o método HTTP para **`POST`**.
+4.  Na URL, digite: `localhost:8080/api/v1/clients`
 5.  Vá para a aba **Body**.
 6.  Selecione as opções `raw` e `JSON`.
 7.  Cole o seguinte corpo (body):
@@ -219,13 +208,14 @@ Cria um novo cliente no sistema.
 
 * **Resultado Esperado:** Você deve receber um status `201 Created` e a resposta JSON com os dados do cliente. **Anote o `id` (ex: 1) para usar nos próximos passos.**
 
+![img_2.png](img_2.png)
+
 #### 2. Processar Transação Normal (Aprovada)
 
 Simula uma transação comum que deve ser aprovada.
 
-1.  Crie uma nova requisição chamada `2. Processar Transação Normal`.
-2.  Método: **`POST`**
-3.  URL: `{{baseUrl}}/api/v1/transactions`
+1.  Mantenha o método HTTP: **`POST`**
+3.  URL: `localhost:8080/api/v1/transactions`
 4.  Na aba **Body** (`raw`, `JSON`), cole:
     ```json
     {
@@ -238,13 +228,14 @@ Simula uma transação comum que deve ser aprovada.
 
 * **Resultado Esperado:** Status `201 Created` e uma resposta com `"status": "APPROVED"`.
 
+![img_3.png](img_3.png)
+
 #### 3. Processar Transação de Aposta (Bloqueada)
 
 Simula uma transação para uma casa de apostas, que deve ser bloqueada.
 
-1.  Crie uma nova requisição chamada `3. Processar Transação de Aposta`.
-2.  Método: **`POST`**
-3.  URL: `{{baseUrl}}/api/v1/transactions`
+1.  Mantenha o metédo HTTP: **`POST`**
+3.  URL: `localhost:8080/api/v1/transactions`
 4.  Na aba **Body** (`raw`, `JSON`), cole:
     ```json
     {
@@ -257,24 +248,44 @@ Simula uma transação para uma casa de apostas, que deve ser bloqueada.
 
 * **Resultado Esperado:** Status `201 Created` e uma resposta com `"status": "BLOCKED"` e o objeto `investmentSuggestion` preenchido.
 
+![img_4.png](img_4.png)
+
 #### 4. Consultar Estado Final do Cliente
 
 Verifica o saldo atualizado do cliente e a lista de sugestões de investimento.
 
-1.  Crie uma nova requisição chamada `4. Consultar Cliente Final`.
-2.  Método: **`GET`**
-3.  URL: `{{baseUrl}}/api/v1/clients/1` (lembre-se de usar o `id` do cliente que você criou).
+1.  Alter o método HTTP para: **`GET`**
+3.  URL: `{{baseUrl}}/api/v1/clients/1` (lembre-se de usar o `id` do cliente que você criou ou deseja consultar).
 4.  Clique em **Send**.
 
 * **Resultado Esperado:** Status `200 OK` e o corpo da resposta mostrando o `balance` atualizado (ex: `924.50`) e a lista `investmentSuggestions` com a sugestão gerada no passo anterior.
+
+![img_5.png](img_5.png)
 
 #### 5. Testar Erro de Cliente Inexistente (404)
 
 Demonstra como a API lida com erros quando um recurso não é encontrado.
 
-1.  Crie uma nova requisição chamada `5. Testar Erro 404`.
-2.  Método: **`GET`**
-3.  URL: `{{baseUrl}}/api/v1/clients/999` (use um `id` que não existe).
+1.  Método: **`GET`**
+3.  URL: `localhost:8080/api/v1/clients/999` (use um `id` que não existe).
 4.  Clique em **Send**.
 
 * **Resultado Esperado:** Status `404 Not Found` e uma resposta de erro JSON padronizada.
+
+![img_6.png](img_6.png)
+
+-----
+
+## Banco de dados H2 
+
+### Credenciais de conexão 
+**Como é um banco local, baseado em memória do PC, não a problemas em questão de vazamento de usuário de conexão!**
+
+- Link de acesso: ```localhost:8080/h2-console```
+- Acesso ao banco do projeto: ```jdbc:h2:mem:xpdb```
+- User: ```sa```
+- Password: ```password```
+
+Dados coletados de acordo com a operação feita no postman no processo anterior:
+
+![img_7.png](img_7.png)
