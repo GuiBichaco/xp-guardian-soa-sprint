@@ -13,6 +13,19 @@ O **XP Guardian** é um serviço RESTful desenvolvido em Java 21 e Spring Boot 3
 
 Este projeto foi desenvolvido para demonstrar boas práticas de arquitetura de software, código limpo, e o uso de tecnologias modernas no ecossistema Java.
 
+------
+
+### Projeto acadêmico
+
+Desenvolvedores:
+- Leticia Fontana Baptista - RM 550289
+- ⁠Julia Palomari - RM 551910
+- ⁠Vinicius Sobreira Borges - RM 97767
+- ⁠Julia Ortiz - RM 550204
+- Guilherme Catelli Bichaco - RM 97989
+
+---
+
 ## ✨ Features Principais
 
 -   **Processamento de Transações**: Endpoint para receber e avaliar transações.
